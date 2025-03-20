@@ -30,8 +30,8 @@ for k in assignmentGraph.edges:
 
 # Find a route in the network
 allJunctions = list(assignmentGraph.nodes)
-fromJunction = allJunctions[1]  # Leenderheide
-toJunction = allJunctions[14]     # Ridderkerk
+fromJunction = allJunctions[11]  # Terbregseplein
+toJunction = allJunctions[1]     # Leenderheide
 rt = nx.shortest_path(assignmentGraph,fromJunction,toJunction, weight='length')
 rtLength = nx.shortest_path_length(assignmentGraph,fromJunction,toJunction, weight='length') / 1000
 
