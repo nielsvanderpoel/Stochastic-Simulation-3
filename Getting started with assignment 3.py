@@ -35,7 +35,7 @@ toJunction = allJunctions[1]     # Leenderheide
 rt = nx.shortest_path(assignmentGraph,fromJunction,toJunction, weight='length')
 rtLength = nx.shortest_path_length(assignmentGraph,fromJunction,toJunction, weight='length') / 1000
 
-
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Print the route
 print(f"Assignment Graph Route from {assignmentGraph.nodes[fromJunction]['name']} to {assignmentGraph.nodes[toJunction]['name']}:")
 print(f'Total route length: {rtLength} km')
