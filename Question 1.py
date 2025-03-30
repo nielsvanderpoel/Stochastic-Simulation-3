@@ -10,6 +10,19 @@ df['TijdFileBegin'] = pd.to_datetime(df['TijdFileBegin'], format='%H:%M:%S').dt.
 df['TijdFileEind'] = pd.to_datetime(df['TijdFileEind'], format='%H:%M:%S').dt.time
 df['TotalSeconds_TFB'] = df['TijdFileBegin'].apply(lambda t: t.hour * 3600 + t.minute * 60 + t.second)
 
+# Ensure the DataFrame is sorted by DatumFileBegin and TijdFileBegin
+df = df.sort_values(by=['DatumFileBegin', 'TijdFileBegin'])
+
+# Combine DatumFileBegin and TijdFileBegin into a single datetime column for accurate time calculations
+df['DatetimeFileBegin'] = pd.to_datetime(df['DatumFileBegin'].astype(str) + ' ' + df['TijdFileBegin'].astype(str))
+
+# Calculate the time difference between successive incidents
+df['TimeElapsed'] = df['DatetimeFileBegin'].diff().dt.total_seconds()
+
+# Reset the time difference to NaN for the first incident of each day
+df.loc[df['DatumFileBegin'] != df['DatumFileBegin'].shift(), 'TimeElapsed'] = None
+
+
 incidents_per_day = df.groupby('DatumFileBegin').size().reset_index(name='incidents_per_day')
 incidents_per_day['day_of_week'] = pd.to_datetime(incidents_per_day['DatumFileBegin']).dt.day_name()
 incidents_per_day = incidents_per_day[['DatumFileBegin', 'day_of_week', 'incidents_per_day']] # Reorder columns
@@ -66,3 +79,4 @@ plt.legend()  # Add a legend to distinguish the two datasets
 plt.grid(axis='y', linestyle='--', alpha=0.7)  # Add gridlines for better readability
 plt.tight_layout()
 plt.show()
+# print(df['TimeElapsed'].describe())
