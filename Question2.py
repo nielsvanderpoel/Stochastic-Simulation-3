@@ -47,9 +47,9 @@ def sample_nonhomogeneous_poisson_arrivals(hourly_rates):
     arrival_times = []
     for hour in range(24):
         lam = hourly_rates[hour]
-        # Poisson number of arrivals in this hour
+        #Poison number of arrivals in this hour
         num_arrivals = np.random.poisson(lam)
-        # Uniformly distribute these arrivals in [hour, hour+1) => [hour*60, (hour+1)*60) in minutes
+        #uniformly distribute these arrivals in [hour, hour+1) => [hour*60, (hour+1)*60) in minutes
         for _ in range(num_arrivals):
             arrival_minute = hour * 60 + np.random.uniform(0, 60)
             arrival_times.append(arrival_minute)
@@ -64,14 +64,6 @@ def compute_route_length_km(graph, path):
     return length_km
 
 def simulate_travel_time_minutes(graph, origin, destination, is_car):
-    """
-    1. Find the shortest path (by 'length') from origin to destination.
-    2. For each edge on that path, sample a normal random link travel time:
-         mean (minutes) = (distance_km / v_max_km_per_hour) * 60
-         std  = mean / 20
-    3. Sum these link-level times to get total travel time in minutes.
-    4. Return None if no path found.
-    """
     v_max = CAR_SPEED if is_car else TRUCK_SPEED
 
     try:
@@ -93,16 +85,6 @@ def simulate_travel_time_minutes(graph, origin, destination, is_car):
     return total_time_min
 
 def run_simulation_one_day(graph, cityA_id, cityB_id):
-    """
-    Runs a 24-hour simulation of arrivals (no incidents, no queues) on the given graph.
-    Returns a dictionary of results:
-      - total_vehicles     (int)
-      - all_times          (list of float)  # in minutes
-      - car_times          (list of float)
-      - truck_times        (list of float)
-      - AtoB_car_times     (list of float) # only for cars from cityA_id to cityB_id
-    """
-
     arrival_times = sample_nonhomogeneous_poisson_arrivals(HOURLY_RATES)
     total_vehicles = len(arrival_times)
 
@@ -139,10 +121,6 @@ def run_simulation_one_day(graph, cityA_id, cityB_id):
 
 
 def get_confidence_interval(data, confidence=0.95):
-    """
-    Returns a (low, high) confidence interval for a list of data using t-distribution.
-    If the data is large, this approximates the z-based approach.
-    """
     n = len(data)
     if n < 2:
         if n == 1:
@@ -160,7 +138,7 @@ def main():
     cityA_id = get_node_id_by_name(graph, CITY_A_NAME)
     cityB_id = get_node_id_by_name(graph, CITY_B_NAME)
     if cityA_id is None or cityB_id is None:
-        raise ValueError("One or both city names were not found in the graph. Check node names.")
+        raise ValueError("One or both citi names were not found in the graph. Check node names.")
 
     try:
         pathAtoB = nx.shortest_path(graph, source=cityA_id, target=cityB_id, weight='length')
