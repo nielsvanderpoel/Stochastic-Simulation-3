@@ -19,6 +19,8 @@ df = df.sort_values(by=['DatumFileBegin', 'TijdFileBegin'])
 # Combine DatumFileBegin and TijdFileBegin into a single datetime column for accurate time calculations
 df['DatetimeFileBegin'] = pd.to_datetime(df['DatumFileBegin'].astype(str) + ' ' + df['TijdFileBegin'].astype(str))
 
+df['FileDuurInSeconds'] = df['FileDuur'] * 60
+
 # Calculate the time difference between successive incidents
 df['TimeElapsed'] = df['DatetimeFileBegin'].diff().dt.total_seconds()
 
@@ -34,14 +36,14 @@ incidents_per_day = incidents_per_day[['DatumFileBegin', 'day_of_week', 'inciden
 incidents_per_day['custom_label'] = incidents_per_day['DatumFileBegin'].apply(lambda x: str(x.day) + "\n" + incidents_per_day.loc[incidents_per_day['DatumFileBegin'] == x, 'day_of_week'].values[0][0])
 
 # Plot incidents_per_day
-# plt.figure(figsize=(12, 6))
-# plt.bar(incidents_per_day['custom_label'], incidents_per_day['incidents_per_day'], color='skyblue')
-# plt.xlabel('Day of Month')
-# plt.ylabel('Number of Incidents')
-# plt.title('Incidents Per Day in November 2024')
-# plt.xticks(rotation=0, ha='center')  # Keep labels horizontal and centered
-# plt.tight_layout()
-# plt.show()
+plt.figure(figsize=(12, 6))
+plt.bar(incidents_per_day['custom_label'], incidents_per_day['incidents_per_day'], color='skyblue')
+plt.xlabel('Day of Month')
+plt.ylabel('Number of Incidents')
+plt.title('Incidents Per Day in November 2024')
+plt.xticks(rotation=0, ha='center')  # Keep labels horizontal and centered
+plt.tight_layout()
+plt.show()
 
 # Convert TijdFileBegin to datetime and extract the hour
 df['TijdFileBegin'] = pd.to_datetime(df['TijdFileBegin'], format='%H:%M:%S')  # Keep as datetime
@@ -71,17 +73,17 @@ total_incidents_per_hour_end.columns = ['Hour', 'total_incidents_end']
 total_incidents_combined = pd.merge(total_incidents_per_hour_begin, total_incidents_per_hour_end, on='Hour', how='outer').fillna(0)
 
 # Plot total incidents per hour for both TijdFileBegin and TijdFileEind
-# plt.figure(figsize=(12, 6))
-# plt.bar(total_incidents_combined['Hour'] - 0.2, total_incidents_combined['total_incidents_begin'], width=0.4, label='TijdFileBegin', color='skyblue')
-# plt.bar(total_incidents_combined['Hour'] + 0.2, total_incidents_combined['total_incidents_end'], width=0.4, label='TijdFileEind', color='orange')
-# plt.xlabel('Hour of the Day')
-# plt.ylabel('Total Number of Incidents')
-# plt.title('Total Incidents Per Hour Across All Days (Begin vs End)')
-# plt.xticks(range(0, 24))  # Ensure all hours (0-23) are shown on the x-axis
-# plt.legend()  # Add a legend to distinguish the two datasets
-# plt.grid(axis='y', linestyle='--', alpha=0.7)  # Add gridlines for better readability
-# plt.tight_layout()
-# plt.show()
+plt.figure(figsize=(12, 6))
+plt.bar(total_incidents_combined['Hour'] - 0.2, total_incidents_combined['total_incidents_begin'], width=0.4, label='TijdFileBegin', color='skyblue')
+plt.bar(total_incidents_combined['Hour'] + 0.2, total_incidents_combined['total_incidents_end'], width=0.4, label='TijdFileEind', color='orange')
+plt.xlabel('Hour of the Day')
+plt.ylabel('Total Number of Incidents')
+plt.title('Total Incidents Per Hour Across All Days (Begin vs End)')
+plt.xticks(range(0, 24))  # Ensure all hours (0-23) are shown on the x-axis
+plt.legend()  # Add a legend to distinguish the two datasets
+plt.grid(axis='y', linestyle='--', alpha=0.7)  # Add gridlines for better readability
+plt.tight_layout()
+plt.show()
 
 # Group by Hour and calculate the total number of incidents per hour
 incident_rate_per_hour = df.groupby('Hour').size().reset_index(name='total_incidents')
@@ -89,23 +91,12 @@ incident_rate_per_hour = df.groupby('Hour').size().reset_index(name='total_incid
 # Calculate the average incident rate per hour
 incident_rate_per_hour['incident_rate'] = incident_rate_per_hour['total_incidents'] / len(df['DatumFileBegin'].unique())
 
-# Display the incident rate per hour
 print(incident_rate_per_hour)
-
-# Plot the incident rate per hour
-plt.figure(figsize=(10, 6))
-plt.bar(incident_rate_per_hour['Hour'], incident_rate_per_hour['incident_rate'], color='skyblue')
-plt.xlabel('Hour of the Day')
-plt.ylabel('Incident Rate (Average Incidents per Hour)')
-plt.title('Incident Rate Per Hour of the Day')
-plt.xticks(range(0, 24))  # Ensure all hours (0-23) are shown on the x-axis
-plt.grid(axis='y', linestyle='--', alpha=0.7)
-plt.tight_layout()
-plt.show()
 
 # Ensure FileDuur is numeric and drop NaN values
 df['FileDuur'] = pd.to_numeric(df['FileDuur'], errors='coerce')  # Convert to numeric if not already
 file_duur_data = df['FileDuur'].dropna()
+
 
 # Fit an exponential distribution to the data
 params = stats.expon.fit(file_duur_data)  # Fit the exponential distribution
@@ -117,7 +108,7 @@ pdf = stats.expon.pdf(x, loc=loc, scale=scale)  # Probability density function o
 
 # Plot the histogram of the data
 plt.figure(figsize=(10, 6))
-plt.hist(file_duur_data, bins=60, density=True, alpha=0.6, color='skyblue', label='FileDuur Data')  # Increased bins to 50
+plt.hist(file_duur_data, bins=50, density=True, alpha=0.6, color='skyblue', label='FileDuur Data')  # Increased bins to 50
 
 # Plot the fitted distribution
 plt.plot(x, pdf, 'r-', label=f'Fitted Exponential (loc={loc:.2f}, scale={scale:.2f})')
@@ -125,7 +116,7 @@ plt.plot(x, pdf, 'r-', label=f'Fitted Exponential (loc={loc:.2f}, scale={scale:.
 # Add labels and title
 plt.xlabel('FileDuur')
 plt.ylabel('Density')
-plt.title('Histogram of FileDuur with Fitted Exponential Distribution')
+plt.title('Histogram of Duration of an Incident with Fitted Exponential Distribution')
 plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
@@ -153,15 +144,15 @@ params_gamma = stats.gamma.fit(file_duur_data)
 shape, loc, scale = params_gamma
 
 # Generate x values for the fitted distribution
-pdf_gamma = stats.gamma.pdf(x, shape, loc, scale)
+pdf_gamma = stats.gamma.pdf(x, 1.19, loc, 6.09)
 
 # Plot the histogram and fitted gamma distribution
 plt.figure(figsize=(10, 6))
-plt.hist(file_duur_data, bins=60, density=True, alpha=0.6, color='skyblue', label='FileDuur Data')
+plt.hist(file_duur_data, bins=50, density=True, alpha=0.6, color='skyblue', label='FileDuur Data')
 plt.plot(x, pdf_gamma, 'm-', label=f'Fitted Gamma (shape={shape:.2f}, scale={scale:.2f})')
 plt.xlabel('FileDuur')
 plt.ylabel('Density')
-plt.title('Histogram of FileDuur with Fitted Gamma Distribution')
+plt.title('Histogram of Duration of an Incident with Fitted Gamma Distribution')
 plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
@@ -181,11 +172,11 @@ pdf_lognorm = stats.lognorm.pdf(x, shape, loc, scale)
 
 # Plot the histogram and fitted log-normal distribution
 plt.figure(figsize=(10, 6))
-plt.hist(file_duur_data, bins=60, density=True, alpha=0.6, color='skyblue', label='FileDuur Data')
+plt.hist(file_duur_data, bins=50, density=True, alpha=0.6, color='skyblue', label='Duration of an Incident Data')
 plt.plot(x, pdf_lognorm, 'g-', label=f'Fitted Log-Normal (shape={shape:.2f}, scale={scale:.2f})')
 plt.xlabel('FileDuur')
 plt.ylabel('Density')
-plt.title('Histogram of FileDuur with Fitted Log-Normal Distribution')
+plt.title('Histogram of Duration of an Incident with Fitted Log-Normal Distribution')
 plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
