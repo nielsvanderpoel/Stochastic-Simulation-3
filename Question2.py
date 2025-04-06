@@ -49,7 +49,7 @@ def sample_nonhomogeneous_poisson_arrivals(hourly_rates):
         lam = hourly_rates[hour]
         #Poison number of arrivals in this hour
         num_arrivals = np.random.poisson(lam)
-        #uniformly distribute these arrivals in [hour, hour+1) => [hour*60, (hour+1)*60) in minutes
+        #uniformli distribute these arrivals in [hour, hour+1) => [hour*60, (hour+1)*60) in minutes
         for _ in range(num_arrivals):
             arrival_minute = hour * 60 + np.random.uniform(0, 60)
             arrival_times.append(arrival_minute)
@@ -174,18 +174,12 @@ def main():
         c_low, c_high = get_confidence_interval(data)
         print(f"{label:<42}  mean={m:7.2f}, std={s:7.2f}, 95%CI=[{c_low:6.2f}, {c_high:6.2f}]")
 
-    print("\n----------------- Simulation Results (Group 10, Q2) -----------------\n")
-    print(f"City A = {CITY_A_NAME} (Rotterdam), City B = {CITY_B_NAME} (Eindhoven)")
-    print(f"Number of replications: {NUM_REPLICATIONS}")
-    print("\nPerformance Measures (times in minutes, route length in km):")
-    print("-------------------------------------------------------------------")
-
     summarize("Total number of vehicles", total_veh_list)
-    summarize("Travel time (arbitrary vehicle) [min]", all_times_means)
-    summarize("Travel time (truck) [min]", truck_times_means)
-    summarize("Travel time (car) [min]", car_times_means)
-    summarize(f"Travel time A->B (car) [min]", AB_car_times_means)
-    print(f"Route length A->B [km]: {route_length_km:.2f}")
+    summarize("traveltime (arbitrary vehicle) [min]", all_times_means)
+    summarize("travel time (truck) [min]", truck_times_means)
+    summarize("travel time (car) [min]", car_times_means)
+    summarize(f"travel time A->B (car) [min]", AB_car_times_means)
+    print(f"Rote length A->B [km]: {route_length_km:.2f}")
 
     all_AB_car_times = []
     for rep in replication_data:
